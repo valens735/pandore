@@ -37,6 +37,7 @@
 #include "SocialMgr.h"
 #include "Util.h"
 #include "Language.h"
+#include "Config/ConfigEnv.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
