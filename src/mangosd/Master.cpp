@@ -333,7 +333,7 @@ int Master::Run()
     WorldDatabase.HaltDelayThread();
     loginDatabase.HaltDelayThread();
 
-    sLog.outString( "Halting process..." );
+    sLog.outString( "Arret en cours..." );
 
     #ifdef WIN32
     if (sConfig.GetBoolDefault("Console.Enable", true))
