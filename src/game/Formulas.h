@@ -156,6 +156,20 @@ namespace MaNGOS
             else if (lvl < 70)
             {
                 xp = (155 + mxp(lvl) * (1344 - ((69-lvl) * (7 + (69 - lvl) * 8 - 1)/2)));
+            }
+			else if (lvl >= 70)                                          
+            {        
+                // level higher than 70 is not supported, return artificially high xp needed,
+                //return 1000000000;                          // to prevent negative values in some cases
+                // Get the amount of XP to level to 70 as a base. I basically hardcoded the value of lvl variable with 70
+               int70XPBase = (155 + mxp(69) * (1344 - ((69-69) * (7 + (69 - 69) * 8 - 1)/2)));
+               // Set the amount of increment per level, define it in decimal, i.e: 0.03 = 3% per level
+               fltXPIncrement = 0.03;
+               // Calculate the next XP needed, the increment is 3% per level (multiply)
+               // You can change this formula to whatever formula you want
+               intCalculatedXP = uint32(int70XPBase + (int70XPBase * (fltXPIncrement * (lvl-69))));
+               // Return the calculated value
+               xp = intCalculatedXP;
             }else
             {
                 // level higher than 70 is not supported
