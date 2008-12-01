@@ -8,19 +8,19 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
+ 
 #ifndef MANGOS_FORMULAS_H
 #define MANGOS_FORMULAS_H
-
+ 
 #include "World.h"
-
+ 
 namespace MaNGOS
 {
     namespace Honor
@@ -33,7 +33,7 @@ namespace MaNGOS
     namespace XP
     {
         typedef enum XPColorChar { RED, ORANGE, YELLOW, GREEN, GRAY };
-
+ 
         inline uint32 GetGrayLevel(uint32 pl_level)
         {
             if( pl_level <= 5 )
@@ -45,7 +45,7 @@ namespace MaNGOS
             else
                 return pl_level - 9;
         }
-
+ 
         inline XPColorChar GetColorCode(uint32 pl_level, uint32 mob_level)
         {
             if( mob_level >= pl_level + 5 )
@@ -59,10 +59,10 @@ namespace MaNGOS
             else
                 return GRAY;
         }
-
+ 
         inline uint32 GetZeroDifference(uint32 pl_level)
         {
-            if( pl_level < 8 )  return 5;
+            if( pl_level < 8 ) return 5;
             if( pl_level < 10 ) return 6;
             if( pl_level < 12 ) return 7;
             if( pl_level < 16 ) return 8;
@@ -75,7 +75,7 @@ namespace MaNGOS
             if( pl_level < 60 ) return 16;
             return 17;
         }
-
+ 
         inline uint32 BaseGain(uint32 pl_level, uint32 mob_level, ContentLevels content)
         {
             //TODO: need modifier for CONTENT_71_80 different from CONTENT_61_70?
@@ -98,24 +98,24 @@ namespace MaNGOS
                 return 0;
             }
         }
-
+ 
         inline uint32 Gain(Player *pl, Unit *u)
         {
             if(u->GetTypeId()==TYPEID_UNIT && (
                 ((Creature*)u)->isTotem() || ((Creature*)u)->isPet() ||
                 (((Creature*)u)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ))
                 return 0;
-
+ 
             uint32 xp_gain= BaseGain(pl->getLevel(), u->getLevel(), GetContentLevelsForMapAndZone(pl->GetMapId(),pl->GetZoneId()));
             if( xp_gain == 0 )
                 return 0;
-
+ 
             if(u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isElite())
                 xp_gain *= 2;
-
+ 
             return (uint32)(xp_gain*sWorld.getRate(RATE_XP_KILL));
         }
-
+ 
         inline uint32 xp_Diff(uint32 lvl)
         {
             if( lvl < 29 )
@@ -129,7 +129,7 @@ namespace MaNGOS
             else
                 return (5*(lvl-30));
         }
-
+ 
         inline uint32 mxp(uint32 lvl)
         {
             if (lvl < 60)
@@ -141,7 +141,7 @@ namespace MaNGOS
                 return (235 + (5*lvl));
             }
         }
-
+ 
         inline uint32 xp_to_level(uint32 lvl)
         {
             uint32 xp = 0;
@@ -156,40 +156,26 @@ namespace MaNGOS
             else if (lvl < 70)
             {
                 xp = (155 + mxp(lvl) * (1344 - ((69-lvl) * (7 + (69 - lvl) * 8 - 1)/2)));
-            }
-			else if (lvl >= 70)                                          
-            {        
-                // level higher than 70 is not supported, return artificially high xp needed,
-                //return 1000000000;                          // to prevent negative values in some cases
-                // Get the amount of XP to level to 70 as a base. I basically hardcoded the value of lvl variable with 70
-               int70XPBase = (155 + mxp(69) * (1344 - ((69-69) * (7 + (69 - 69) * 8 - 1)/2)));
-               // Set the amount of increment per level, define it in decimal, i.e: 0.03 = 3% per level
-               fltXPIncrement = 0.03;
-               // Calculate the next XP needed, the increment is 3% per level (multiply)
-               // You can change this formula to whatever formula you want
-               intCalculatedXP = uint32(int70XPBase + (int70XPBase * (fltXPIncrement * (lvl-69))));
-               // Return the calculated value
-               xp = intCalculatedXP;
             }else
             {
                 // level higher than 70 is not supported
                 xp = (uint32)(779700 * (pow(sWorld.getRate(RATE_XP_PAST_70), (int32)lvl - 69)));
                 return ((xp < 0x7fffffff) ? xp : 0x7fffffff);
             }
-
+ 
             // The XP to Level is always rounded to the nearest 100 points (50 rounded to high).
-            xp = ((xp + 50) / 100) * 100;                   // use additional () for prevent free association operations in C++
-
-            if ((lvl > 10) && (lvl < 60))                   // compute discount added in 2.3.x
+            xp = ((xp + 50) / 100) * 100; // use additional () for prevent free association operations in C++
+ 
+            if ((lvl > 10) && (lvl < 60)) // compute discount added in 2.3.x
             {
                 uint32 discount = (lvl < 28) ? (lvl - 10) : 18;
-                xp = (xp * (100 - discount)) / 100;         // apply discount
-                xp = (xp / 100) * 100;                      // floor to hundreds
+                xp = (xp * (100 - discount)) / 100; // apply discount
+                xp = (xp / 100) * 100; // floor to hundreds
             }
-
+ 
             return xp;
         }
-
+ 
         inline float xp_in_group_rate(uint32 count, bool isRaid)
         {
             if(isRaid)
