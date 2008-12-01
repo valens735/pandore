@@ -674,6 +674,14 @@ enum MangosStrings
     LANG_ACCOUNT_LIST_HEADER            = 1010,
     LANG_ACCOUNT_LIST_ERROR             = 1011,
     // Room for more level 4              1012-1099 not used
+	
+	LANG_COMMAND_FREEZE                 = 1050,
+    LANG_COMMAND_FREEZE_ERROR           = 1051,
+    LANG_COMMAND_FREEZE_WRONG           = 1052,
+    LANG_COMMAND_UNFREEZE               = 1053,
+    LANG_COMMAND_NO_FROZEN_PLAYERS      = 1054,
+    LANG_COMMAND_LIST_FREEZE            = 1055,
+    LANG_COMMAND_FROZEN_PLAYERS         = 1056,
 
     // Level 3 (continue)
     LANG_ACCOUNT_SETADDON               = 1100,
