@@ -294,6 +294,29 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
     if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || GetPlayer()->isInFlight() ||
         GetSecurity() >= sWorld.getConfig(CONFIG_INSTANT_LOGOUT))
     {
+		bool Annonce = sConfig.GetBoolDefault("AnnonceMJ",true);
+		if(Annonce)
+		{
+		switch(GetSecurity())
+			{
+			case 1:
+				sWorld.SendWorldText(LANG_GMLOGOUT_MOD, GetPlayer()->GetName());
+			break;
+			case 2:
+				sWorld.SendWorldText(LANG_GMLOGOUT_MJ, GetPlayer()->GetName());
+			break;
+			case 3:
+				sWorld.SendWorldText(LANG_GMLOGOUT_DBG, GetPlayer()->GetName());
+			break;
+			case 4:
+				sWorld.SendWorldText(LANG_GMLOGOUT_ADM, GetPlayer()->GetName());
+			break;
+			case 5:
+				sWorld.SendWorldText(LANG_GMLOGOUT_SYS, GetPlayer()->GetName());
+			break;
+			}
+		sLog.outBasic("MJ '%s' déconnecté et annoncé",GetPlayer()->GetName());
+		}
         LogoutPlayer(true);
         return;
     }
