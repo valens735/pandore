@@ -419,6 +419,7 @@ class ChatHandler
         bool HandleCastTargetCommand(const char *args);
         bool HandleComeToMeCommand(const char *args);
         bool HandleCombatStopCommand(const char *args);
+        bool HandleAHBotOptionsCommand(const char * args);
         bool HandleSendMessageCommand(const char * args);
         bool HandleRepairitemsCommand(const char* args);
         bool HandleWaterwalkCommand(const char* args);
