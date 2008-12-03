@@ -219,7 +219,7 @@ void SpellCastTargets::write ( WorldPacket * data )
 {
     *data << uint32(m_targetMask);
 
-    if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNK2 ) )
+    if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK | TARGET_FLAG_CORPSE | TARGET_FLAG_UNK2 ) )
     {
         if(m_targetMask & TARGET_FLAG_UNIT)
         {
@@ -2633,13 +2633,6 @@ void Spell::SendCastResult(uint8 result)
         }
         ((Player*)m_caster)->GetSession()->SendPacket(&data);
     }
-    /*else
-    {
-        WorldPacket data(SMSG_CLEAR_EXTRA_AURA_INFO_OBSOLETE, (8+4));
-        data.append(m_caster->GetPackGUID());
-        data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->GetSession()->SendPacket(&data);
-    }*/
 }
 
 void Spell::SendSpellStart()
@@ -2653,14 +2646,10 @@ void Spell::SendSpellStart()
     if(IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;
 
-    if(m_runesState)
+    if(m_spellInfo->runeCostID)
         castFlags |= CAST_FLAG_UNKNOWN10;
 
-    Unit *target;
-    if(!m_targets.getUnitTarget())
-        target = m_caster;
-    else
-        target = m_targets.getUnitTarget();
+    Unit *target = m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster;
 
     WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
     if(m_CastItem)
@@ -2670,16 +2659,16 @@ void Spell::SendSpellStart()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
-    data << uint32(m_spellInfo->Id);
-    data << uint32(castFlags);
-    data << uint32(m_timer);
+    data << uint32(m_spellInfo->Id);                        // spellId
+    data << uint32(castFlags);                              // cast flags
+    data << uint32(m_timer);                                // delay?
 
     m_targets.write(&data);
 
     if ( castFlags & CAST_FLAG_UNKNOWN6 )                   // predicted power?
         data << uint32(0);
 
-    if ( castFlags & CAST_FLAG_UNKNOWN7 )                   // rune cooldowns
+    if ( castFlags & CAST_FLAG_UNKNOWN7 )                   // rune cooldowns list
     {
         uint8 v1 = 0;//m_runesState;
         uint8 v2 = 0;//((Player*)m_caster)->GetRunesState();
@@ -2689,12 +2678,8 @@ void Spell::SendSpellStart()
         {
             uint8 m = (1 << i);
             if(m & v1)                                      // usable before...
-            {
                 if(!(m & v2))                               // ...but on cooldown now...
-                {
                     data << uint8(0);                       // some unknown byte (time?)
-                }
-            }
         }
     }
 
@@ -2710,23 +2695,19 @@ void Spell::SendSpellGo()
     if(!IsNeedSendToClient())
         return;
 
-    sLog.outDebug("Sending SMSG_SPELL_GO id=%u",m_spellInfo->Id);
+    sLog.outDebug("Sending SMSG_SPELL_GO id=%u", m_spellInfo->Id);
 
-    Unit * target;
-    if(!m_targets.getUnitTarget())
-        target = m_caster;
-    else
-        target = m_targets.getUnitTarget();
+    Unit *target = m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster;
 
     uint32 castFlags = CAST_FLAG_UNKNOWN3;
     if(IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
 
-    if(m_runesState)
+    if((m_caster->GetTypeId() == TYPEID_PLAYER) && (m_caster->getClass() == CLASS_DEATH_KNIGHT) && m_spellInfo->runeCostID)
     {
         castFlags |= CAST_FLAG_UNKNOWN10;                   // same as in SMSG_SPELL_START
         castFlags |= CAST_FLAG_UNKNOWN6;                    // makes cooldowns visible
-        castFlags |= CAST_FLAG_UNKNOWN7;                    // rune cooldowns
+        castFlags |= CAST_FLAG_UNKNOWN7;                    // rune cooldowns list
     }
 
     WorldPacket data(SMSG_SPELL_GO, 50);                    // guess size
@@ -2737,8 +2718,8 @@ void Spell::SendSpellGo()
 
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
-    data << uint32(m_spellInfo->Id);
-    data << uint32(castFlags);
+    data << uint32(m_spellInfo->Id);                        // spellId
+    data << uint32(castFlags);                              // cast flags
     data << uint32(getMSTime());                            // timestamp
 
     WriteSpellGoTargets(&data);
@@ -2748,7 +2729,7 @@ void Spell::SendSpellGo()
     if ( castFlags & CAST_FLAG_UNKNOWN6 )                   // unknown wotlk, predicted power?
         data << uint32(0);
 
-    if ( castFlags & CAST_FLAG_UNKNOWN7 )                   // rune cooldowns?
+    if ( castFlags & CAST_FLAG_UNKNOWN7 )                   // rune cooldowns list
     {
         uint8 v1 = m_runesState;
         uint8 v2 = ((Player*)m_caster)->GetRunesState();
@@ -2758,12 +2739,8 @@ void Spell::SendSpellGo()
         {
             uint8 m = (1 << i);
             if(m & v1)                                      // usable before...
-            {
                 if(!(m & v2))                               // ...but on cooldown now...
-                {
                     data << uint8(0);                       // some unknown byte (time?)
-                }
-            }
         }
     }
 
