@@ -598,12 +598,31 @@ bool Player::Create( uint32 guidlow, std::string name, uint8 race, uint8 class_,
     }
 
     // set starting level
-    if(getClass() == CLASS_DEATH_KNIGHT)
-            SetUInt32Value(UNIT_FIELD_LEVEL, 55);
-    else
-    {        
-		if (GetSession()->GetSecurity() >= SEC_MODERATOR)
+	if (GetSession()->GetSecurity() >= SEC_MODERATOR)
+	{
+		uint32 gmlvl = sWorld.getConfig(CONFIG_START_GM_LEVEL);
+		
+		if(getClass() == CLASS_DEATH_KNIGHT)
+		{
+			if (gmlvl < 55)
+				SetUInt32Value(UNIT_FIELD_LEVEL, 55);
+			else
+				SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
+		}
+		else
 			SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
+	}
+    else
+    {
+		uint32 plrlvl = sWorld.getConfig(CONFIG_START_PLAYER_LEVEL);
+		
+		if(getClass() == CLASS_DEATH_KNIGHT)
+		{
+			if (plrlvl < 55)
+				SetUInt32Value(UNIT_FIELD_LEVEL, 55);
+			else
+				SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
+		}
         else
             SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
     }
