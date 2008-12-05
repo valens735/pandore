@@ -738,8 +738,8 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
     }
 
     // check distance
-    return IsWithinDistInMap2d(u,World::GetMaxVisibleDistanceForObject() +
-        (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f) );
+    return IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject() +
+        (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
 void GameObject::Respawn()
