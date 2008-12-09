@@ -642,7 +642,7 @@ void Spell::FillTargetMap()
         if(m_caster->GetTypeId() == TYPEID_PLAYER)
         {
             Player *me = (Player*)m_caster;
-            for (std::list<Unit*>::const_iterator itr = tmpUnitMap.begin(); itr != tmpUnitMap.end(); itr++)
+            for (std::list<Unit*>::const_iterator itr = tmpUnitMap.begin(); itr != tmpUnitMap.end(); ++itr)
             {
                 Unit *owner = (*itr)->GetOwner();
                 Unit *u = owner ? owner : (*itr);
@@ -2521,7 +2521,7 @@ void Spell::finish(bool ok)
     {
         SpellEntry const *auraSpellInfo = (*i)->GetSpellProto();
         uint32 auraSpellIdx = (*i)->GetEffIndex();
-        if (IsAffectedBy(auraSpellInfo, auraSpellIdx))
+        if (IsAffectedByAura((*i)))
         {
             for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
                 if( ihit->effectMask & (1<<auraSpellIdx) )
@@ -4343,7 +4343,7 @@ uint8 Spell::CheckCasterAuras() const
         {
             //Checking auras is needed now, because you are prevented by some state but the spell grants immunity.
             Unit::AuraMap const& auras = m_caster->GetAuras();
-            for(Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); itr++)
+            for(Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
             {
                 if(itr->second)
                 {
@@ -5040,9 +5040,9 @@ void Spell::UpdatePointers()
     m_targets.Update(m_caster);
 }
 
-bool Spell::IsAffectedBy(SpellEntry const *spellInfo, uint32 effectId)
+bool Spell::IsAffectedByAura(Aura *aura)
 {
-    return spellmgr.IsAffectedBySpell(m_spellInfo,spellInfo->Id,effectId,spellInfo->EffectItemType[effectId]);
+    return spellmgr.IsAffectedByMod(m_spellInfo, aura->getAuraSpellMod());
 }
 
 bool Spell::CheckTargetCreatureType(Unit* target) const
