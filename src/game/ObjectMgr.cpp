@@ -200,7 +200,7 @@ Guild * ObjectMgr::GetGuildById(const uint32 GuildId) const
     return NULL;
 }
 
-Guild * ObjectMgr::GetGuildByName(std::string guildname) const
+Guild * ObjectMgr::GetGuildByName(const std::string& guildname) const
 {
     for(GuildSet::const_iterator itr = mGuildSet.begin(); itr != mGuildSet.end(); ++itr)
         if ((*itr)->GetName() == guildname)
@@ -236,7 +236,7 @@ ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 ArenaTeamId) const
     return NULL;
 }
 
-ArenaTeam* ObjectMgr::GetArenaTeamByName(std::string arenateamname) const
+ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname) const
 {
     for(ArenaTeamSet::const_iterator itr = mArenaTeamSet.begin(); itr != mArenaTeamSet.end(); ++itr)
         if ((*itr)->GetName() == arenateamname)
@@ -944,24 +944,24 @@ void ObjectMgr::LoadEquipmentTemplates()
             if(!eqInfo->equipentry[j])
                continue;
 
-            ItemPrototype const* proto = objmgr.GetItemPrototype(eqInfo->equipentry[j]);
+            ItemEntry const *dbcitem = sItemStore.LookupEntry(eqInfo->equipentry[j]);
 
-            if(!proto)
+            if(!dbcitem)
             {
                 sLog.outErrorDb("Unknown item (entry=%u) in creature_equip_template.equipentry%u for entry = %u, forced to 0.", eqInfo->equipentry[j], j+1, i);
                 const_cast<EquipmentInfo*>(eqInfo)->equipentry[j] = 0;
                 continue;
             }
 
-            if(proto->InventoryType != INVTYPE_WEAPON &&
-                    proto->InventoryType != INVTYPE_SHIELD &&
-                    proto->InventoryType != INVTYPE_RANGED &&
-                    proto->InventoryType != INVTYPE_2HWEAPON &&
-                    proto->InventoryType != INVTYPE_WEAPONMAINHAND &&
-                    proto->InventoryType != INVTYPE_WEAPONOFFHAND &&
-                    proto->InventoryType != INVTYPE_HOLDABLE &&
-                    proto->InventoryType != INVTYPE_THROWN &&
-                    proto->InventoryType != INVTYPE_RANGEDRIGHT)
+            if(dbcitem->InventoryType != INVTYPE_WEAPON &&
+                    dbcitem->InventoryType != INVTYPE_SHIELD &&
+                    dbcitem->InventoryType != INVTYPE_RANGED &&
+                    dbcitem->InventoryType != INVTYPE_2HWEAPON &&
+                    dbcitem->InventoryType != INVTYPE_WEAPONMAINHAND &&
+                    dbcitem->InventoryType != INVTYPE_WEAPONOFFHAND &&
+                    dbcitem->InventoryType != INVTYPE_HOLDABLE &&
+                    dbcitem->InventoryType != INVTYPE_THROWN &&
+                    dbcitem->InventoryType != INVTYPE_RANGEDRIGHT)
             {
                 sLog.outErrorDb("Item (entry=%u) in creature_equip_template.equipentry%u for entry = %u is not equipable in a hand, forced to 0.", eqInfo->equipentry[j], j+1, i);
                 const_cast<EquipmentInfo*>(eqInfo)->equipentry[j] = 0;
@@ -970,6 +970,9 @@ void ObjectMgr::LoadEquipmentTemplates()
     }
     sLog.outString( ">> Loaded %u equipment template", sEquipmentStorage.RecordCount );
     sLog.outString();
+
+    // This DBC is currently only used for item templates and creature equipments checks.
+    sItemStore.Clear();
 }
 
 CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelid)
@@ -1433,7 +1436,7 @@ uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
     return 0;
 }
 
-uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(std::string name) const
+uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(const std::string& name) const
 {
     QueryResult *result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'", name.c_str());
     if(result)
@@ -1875,9 +1878,6 @@ void ObjectMgr::LoadItemPrototypes()
             const_cast<ItemPrototype*>(proto)->FoodType = 0;
         }
     }
-
-    // this DBC used currently only for check item templates in DB.
-    sItemStore.Clear();
 }
 
 void ObjectMgr::LoadAuctionItems()
@@ -6198,7 +6198,7 @@ bool isValidString(std::wstring wstr, uint32 strictMask, bool numericOrSpace, bo
     return false;
 }
 
-bool ObjectMgr::IsValidName( std::string name, bool create )
+bool ObjectMgr::IsValidName( const std::string& name, bool create )
 {
     std::wstring wname;
     if(!Utf8toWStr(name,wname))
@@ -6212,7 +6212,7 @@ bool ObjectMgr::IsValidName( std::string name, bool create )
     return isValidString(wname,strictMask,false,create);
 }
 
-bool ObjectMgr::IsValidCharterName( std::string name )
+bool ObjectMgr::IsValidCharterName( const std::string& name )
 {
     std::wstring wname;
     if(!Utf8toWStr(name,wname))
@@ -6226,7 +6226,7 @@ bool ObjectMgr::IsValidCharterName( std::string name )
     return isValidString(wname,strictMask,true);
 }
 
-bool ObjectMgr::IsValidPetName( std::string name )
+bool ObjectMgr::IsValidPetName( const std::string& name )
 {
     std::wstring wname;
     if(!Utf8toWStr(name,wname))
@@ -6872,7 +6872,7 @@ void ObjectMgr::LoadGameTele()
     sLog.outString( ">> Loaded %u game tele's", count );
 }
 
-GameTele const* ObjectMgr::GetGameTele(std::string name) const
+GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
 {
     // explicit name case
     std::wstring wname;
@@ -6915,7 +6915,7 @@ bool ObjectMgr::AddGameTele(GameTele& tele)
         new_id,tele.position_x,tele.position_y,tele.position_z,tele.orientation,tele.mapId,tele.name.c_str());
 }
 
-bool ObjectMgr::DeleteGameTele(std::string name)
+bool ObjectMgr::DeleteGameTele(const std::string& name)
 {
     // explicit name case
     std::wstring wname;
@@ -7323,7 +7323,7 @@ uint32 ObjectMgr::GetScriptId(const char *name)
     if(!name) return 0;
     ScriptNameMap::const_iterator itr =
         std::lower_bound(m_scriptNames.begin(), m_scriptNames.end(), name);
-    if(itr == m_scriptNames.end()) return 0;
+    if(itr == m_scriptNames.end() || *itr != name) return 0;
     return itr - m_scriptNames.begin();
 }
 

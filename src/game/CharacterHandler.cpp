@@ -481,6 +481,12 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data,8);
 
+    if(PlayerLoading() || GetPlayer() != NULL)
+    {
+        sLog.outError("Player tryes to login again, AccountId = %d",GetAccountId());
+        return;
+    }
+
     m_playerLoading = true;
     uint64 playerGuid = 0;
 
@@ -942,7 +948,7 @@ void WorldSession::HandleToggleCloakOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
 {
-    CHECK_PACKET_SIZE(recv_data,8+1);
+    CHECK_PACKET_SIZE(recv_data, 8+1);
 
     uint64 guid;
     std::string newname;
@@ -953,34 +959,24 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     recv_data >> guid;
     recv_data >> newname;
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT at_login FROM characters WHERE guid ='%u'", GUID_LOPART(guid));
-    if (result)
-    {
-        uint32 at_loginFlags;
-        Field *fields = result->Fetch();
-        at_loginFlags = fields[0].GetUInt32();
-        delete result;
-
-        if (!(at_loginFlags & AT_LOGIN_RENAME))
-        {
-            WorldPacket data(SMSG_CHAR_RENAME, 1);
-            data << (uint8)CHAR_CREATE_ERROR;
-            SendPacket( &data );
-            return;
-        }
-    }
-    else
+    QueryResult *result = CharacterDatabase.PQuery("SELECT at_login, name FROM characters WHERE guid ='%u'", GUID_LOPART(guid));
+    if (!result)
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_CREATE_ERROR;
+        data << uint8(CHAR_CREATE_ERROR);
         SendPacket( &data );
         return;
     }
 
-    if(!objmgr.GetPlayerNameByGUID(guid, oldname))          // character not exist, because we have no name for this guid
+    Field *fields = result->Fetch();
+    uint32 at_loginFlags = fields[0].GetUInt32();
+    oldname = fields[1].GetCppString();
+    delete result;
+
+    if (!(at_loginFlags & AT_LOGIN_RENAME))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_LOGIN_NO_CHARACTER;
+        data << uint8(CHAR_CREATE_ERROR);
         SendPacket( &data );
         return;
     }
@@ -989,7 +985,7 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     if(!normalizePlayerName(newname))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_NAME_NO_NAME;
+        data << uint8(CHAR_NAME_NO_NAME);
         SendPacket( &data );
         return;
     }
@@ -997,7 +993,7 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     if(!ObjectMgr::IsValidName(newname,true))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_NAME_INVALID_CHARACTER;
+        data << uint8(CHAR_NAME_INVALID_CHARACTER);
         SendPacket( &data );
         return;
     }
@@ -1006,7 +1002,7 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     if(GetSecurity() == SEC_PLAYER && objmgr.IsReservedName(newname))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_NAME_RESERVED;
+        data << uint8(CHAR_NAME_RESERVED);
         SendPacket( &data );
         return;
     }
@@ -1014,7 +1010,7 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     if(objmgr.GetPlayerGUIDByName(newname))                 // character with this name already exist
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_CREATE_ERROR;
+        data << uint8(CHAR_CREATE_NAME_IN_USE);
         SendPacket( &data );
         return;
     }
@@ -1022,23 +1018,21 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     if(newname == oldname)                                  // checked by client
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
-        data << (uint8)CHAR_NAME_FAILURE;
+        data << uint8(CHAR_NAME_FAILURE);
         SendPacket( &data );
         return;
     }
 
-    // we have to check character at_login_flag & AT_LOGIN_RENAME also (fake packets hehe)
-
     CharacterDatabase.escape_string(newname);
-    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME),GUID_LOPART(guid));
+    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME), GUID_LOPART(guid));
     CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", GUID_LOPART(guid));
 
     std::string IP_str = GetRemoteAddress();
-    sLog.outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s",GetAccountId(),IP_str.c_str(),oldname.c_str(),GUID_LOPART(guid),newname.c_str());
+    sLog.outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", GetAccountId(), IP_str.c_str(), oldname.c_str(), GUID_LOPART(guid), newname.c_str());
 
     WorldPacket data(SMSG_CHAR_RENAME,1+8+(newname.size()+1));
-    data << (uint8)RESPONSE_SUCCESS;
-    data << guid;
+    data << uint8(RESPONSE_SUCCESS);
+    data << uint64(guid);
     data << newname;
     SendPacket(&data);
 }
@@ -1203,4 +1197,95 @@ void WorldSession::HandleRemoveGlyph( WorldPacket & recv_data )
             _player->SetGlyph(slot, 0);
         }
     }
+}
+
+void WorldSession::HandleCharCustomize(WorldPacket& recv_data)
+{
+    CHECK_PACKET_SIZE(recv_data, 8+1);
+
+    uint64 guid;
+    std::string newname;
+
+    recv_data >> guid;
+    recv_data >> newname;
+
+    CHECK_PACKET_SIZE(recv_data, recv_data.rpos()+1+1+1+1+1+1);
+
+    uint8 gender, skin, face, hairStyle, hairColor, facialHair;
+    recv_data >> gender >> skin >> face >> hairStyle >> hairColor >> facialHair;
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT at_login FROM characters WHERE guid ='%u'", GUID_LOPART(guid));
+    if (!result)
+    {
+        WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data << uint8(CHAR_CREATE_ERROR);
+        SendPacket( &data );
+        return;
+    }
+
+    Field *fields = result->Fetch();
+    uint32 at_loginFlags = fields[0].GetUInt32();
+    delete result;
+
+    if (!(at_loginFlags & AT_LOGIN_CUSTOMIZE))
+    {
+        WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data << uint8(CHAR_CREATE_ERROR);
+        SendPacket( &data );
+        return;
+    }
+
+    // prevent character rename to invalid name
+    if(!normalizePlayerName(newname))
+    {
+        WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data << uint8(CHAR_NAME_NO_NAME);
+        SendPacket( &data );
+        return;
+    }
+
+    if(!ObjectMgr::IsValidName(newname,true))
+    {
+        WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data << uint8(CHAR_NAME_INVALID_CHARACTER);
+        SendPacket( &data );
+        return;
+    }
+
+    // check name limitations
+    if(GetSecurity() == SEC_PLAYER && objmgr.IsReservedName(newname))
+    {
+        WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data << uint8(CHAR_NAME_RESERVED);
+        SendPacket( &data );
+        return;
+    }
+
+    if(objmgr.GetPlayerGUIDByName(newname))                 // character with this name already exist
+    {
+        WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
+        data << uint8(CHAR_CREATE_NAME_IN_USE);
+        SendPacket( &data );
+        return;
+    }
+
+    CharacterDatabase.escape_string(newname);
+    Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
+    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_CUSTOMIZE), GUID_LOPART(guid));
+    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", GUID_LOPART(guid));
+
+    std::string IP_str = GetRemoteAddress();
+    sLog.outChar("Account: %d (IP: %s), Character guid: %u Customized to: %s", GetAccountId(), IP_str.c_str(), GUID_LOPART(guid), newname.c_str());
+
+    WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1+8+(newname.size()+1)+6);
+    data << uint8(RESPONSE_SUCCESS);
+    data << uint64(guid);
+    data << newname;
+    data << uint8(gender);
+    data << uint8(skin);
+    data << uint8(face);
+    data << uint8(hairStyle);
+    data << uint8(hairColor);
+    data << uint8(facialHair);
+    SendPacket(&data);
 }
