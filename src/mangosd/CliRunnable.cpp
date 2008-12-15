@@ -303,7 +303,7 @@ void CliRunnable::run()
 
     // print this here the first time
     // later it will be printed after command queue updates
-    printf("mangos>");
+    printf("pandore>");
 
     ///- As long as the World is running (no World::m_stopEvent), get the command line and handle it
     while (!World::IsStopped())
@@ -329,14 +329,14 @@ void CliRunnable::run()
 
             if(!*command_str)
             {
-                printf("mangos>");
+                printf("pandore>");
                 continue;
             }
 
             std::string command;
             if(!consoleToUtf8(command_str,command))         // convert from console encoding to utf8
             {
-                printf("mangos>");
+                printf("pandore>");
                 continue;
             }
 
