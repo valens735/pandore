@@ -139,23 +139,23 @@ extern int main(int argc, char **argv)
 
     if (!sConfig.SetSource(cfg_file))
     {
-        sLog.outError("Ne peut trouver le fichier de configuration %s.", cfg_file);
+        sLog.outError("Could not find configuration file %s.", cfg_file);
         return 1;
     }
 
     sLog.outString( "%s [realm-daemon]", _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_NR,REVISION_ID) );
-    sLog.outString( "<Ctrl-C> pour stopper.\n" );
-    sLog.outString("Utilise le fichier de configuration %s.", cfg_file);
+    sLog.outString( "<Ctrl-C> to stop.\n" );
+    sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- Check the version of the configuration file
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
     if (confVersion < _REALMDCONFVERSION)
     {
-        sLog.outError("*******************************************************************************");
-        sLog.outError(" Attention: Your realmd.conf version indicates your conf file is out of date!");
-        sLog.outError("            Please check for updates, as your current default values may cause");
-        sLog.outError("            strange behavior.");
-        sLog.outError("********************************************************************************");
+        sLog.outError("*****************************************************************************");
+        sLog.outError(" WARNING: Your realmd.conf version indicates your conf file is out of date!");
+        sLog.outError("          Please check for updates, as your current default values may cause");
+        sLog.outError("          strange behavior.");
+        sLog.outError("*****************************************************************************");
         clock_t pause = 3000 + clock();
 
         while (pause > clock()) {}
@@ -261,7 +261,7 @@ extern int main(int argc, char **argv)
         if( (++loopCounter) == numLoops )
         {
             loopCounter = 0;
-            sLog.outDetail("Ping MySQL pour garder la connexion active");
+            sLog.outDetail("Ping MySQL to keep connection alive");
             delete dbRealmServer.Query("SELECT 1 FROM realmlist LIMIT 1");
         }
 #ifdef WIN32
@@ -276,7 +276,7 @@ extern int main(int argc, char **argv)
     ///- Remove signal handling before leaving
     UnhookSignals();
 
-    sLog.outString( "Arret en cours..." );
+    sLog.outString( "Halting process..." );
     return 0;
 }
 
@@ -305,14 +305,14 @@ bool StartDB(std::string &dbstring)
 {
     if(!sConfig.GetString("LoginDatabaseInfo", &dbstring))
     {
-        sLog.outError("BDD non specifie");
+        sLog.outError("Database not specified");
         return false;
     }
 
-    sLog.outString("BDD: %s", dbstring.c_str() );
+    sLog.outString("Database: %s", dbstring.c_str() );
     if(!dbRealmServer.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Ne peut se connecter a la BDD");
+        sLog.outError("Cannot connect to database");
         return false;
     }
 

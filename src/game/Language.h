@@ -676,14 +676,6 @@ enum MangosStrings
     LANG_ACCOUNT_LIST_HEADER            = 1010,
     LANG_ACCOUNT_LIST_ERROR             = 1011,
     // Room for more level 4              1012-1099 not used
-	
-	LANG_COMMAND_FREEZE                 = 1050,
-    LANG_COMMAND_FREEZE_ERROR           = 1051,
-    LANG_COMMAND_FREEZE_WRONG           = 1052,
-    LANG_COMMAND_UNFREEZE               = 1053,
-    LANG_COMMAND_NO_FROZEN_PLAYERS      = 1054,
-    LANG_COMMAND_LIST_FREEZE            = 1055,
-    LANG_COMMAND_FROZEN_PLAYERS         = 1056,
 
     // Level 3 (continue)
     LANG_ACCOUNT_SETADDON               = 1100,
@@ -711,23 +703,6 @@ enum MangosStrings
     // Room for more level 3              1122-1199 not used
 
     // FREE IDS                           1200-9999
-
-	LANG_ANNOUNCE_MOD                 	= 2000,
-	LANG_ANNOUNCE_MJ                 	= 2001,
-	LANG_ANNOUNCE_DBG                 	= 2002,
-	LANG_ANNOUNCE_ADM                 	= 2003,
-	LANG_ANNOUNCE_SYS                 	= 2004,
-	LANG_ANNOUNCE_DEF                 	= 2005,
-	LANG_GMLOGIN_MOD                 	= 2006,
-	LANG_GMLOGIN_MJ                 	= 2007,
-	LANG_GMLOGIN_DBG                 	= 2008,
-	LANG_GMLOGIN_ADM                 	= 2009,
-	LANG_GMLOGIN_SYS                 	= 2010,
-	LANG_GMLOGOUT_MOD                 	= 2011,
-	LANG_GMLOGOUT_MJ                 	= 2012,
-	LANG_GMLOGOUT_DBG                 	= 2013,
-	LANG_GMLOGOUT_ADM                 	= 2014,
-	LANG_GMLOGOUT_SYS                 	= 2015,
 
     // Use for not-in-offcial-sources patches
     //                                    10000-10999

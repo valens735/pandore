@@ -137,28 +137,26 @@ extern int main(int argc, char **argv)
 
     if (!sConfig.SetSource(cfg_file))
     {
-        sLog.outError("Ne trouve pas le fichier de configuration %s.", cfg_file);
+        sLog.outError("Could not find configuration file %s.", cfg_file);
         return 1;
     }
 
     sLog.outString( "%s [world-daemon]", _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_NR,REVISION_ID) );
-    sLog.outString( "<Ctrl-C> pour stoper.\n\n" );
+    sLog.outString( "<Ctrl-C> to stop.\n\n" );
 
-    sLog.outTitle( "PPPPPPP         NN   NN DDDDDD     OOOO  RRRRRRRRR");
-    sLog.outTitle( "PP   PP         NN   NN DDD DDD   OO  OO RRR    RRR");
-    sLog.outTitle( "PP   PP         NNN  NN DDD  DDD  OO  OO RRR     RRR");
-    sLog.outTitle( "PP   PP         NNNN NN DDD   DDD OO  OO RRR    RRR");
-    sLog.outTitle( "PPPPPPP  aaaaa  NN NNNN DDD   DDD OO  OO RRRRRRR      eeeeee");
-    sLog.outTitle( "PP      a   aaa NN  NNN DDD   DDD OO  OO RRR  RRR    eee  ee");
-    sLog.outTitle( "PP          aaa NN   NN DDD  DDD  OO  OO RRR   RRR   eee  ee");
-    sLog.outTitle( "PP      aaaaaaa NN   NN DDD DDD   OO  OO RRR    RRR  eeeeeee");
-    sLog.outTitle( "PP      aa  aaa NN   NN DDDDDD     OOOO  RRR     RRR eee");
-    sLog.outTitle( "        aa  aaa                                      eee   e");
-    sLog.outTitle( "        aaaaaa                                        eeeee");
-    sLog.outTitle( "                Developpement par l'equipe Pandore ");
-    sLog.outTitle( "                 http://pandore.sourceforge.net/\n\n");
+    sLog.outTitle( "MM   MM         MM   MM  MMMMM   MMMM   MMMMM");
+    sLog.outTitle( "MM   MM         MM   MM MMM MMM MM  MM MMM MMM");
+    sLog.outTitle( "MMM MMM         MMM  MM MMM MMM MM  MM MMM");
+    sLog.outTitle( "MM M MM         MMMM MM MMM     MM  MM  MMM");
+    sLog.outTitle( "MM M MM  MMMMM  MM MMMM MMM     MM  MM   MMM");
+    sLog.outTitle( "MM M MM M   MMM MM  MMM MMMMMMM MM  MM    MMM");
+    sLog.outTitle( "MM   MM     MMM MM   MM MM  MMM MM  MM     MMM");
+    sLog.outTitle( "MM   MM MMMMMMM MM   MM MMM MMM MM  MM MMM MMM");
+    sLog.outTitle( "MM   MM MM  MMM MM   MM  MMMMMM  MMMM   MMMMM");
+    sLog.outTitle( "        MM  MMM http://getmangos.com");
+    sLog.outTitle( "        MMMMMM\n\n");
 
-    sLog.outString("Utilisation du fichier de configuration %s.", cfg_file);
+    sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?

@@ -558,9 +558,6 @@ LogColors = ""
 #        Default: 1 (true)
 #                 0 (false)
 #
-#    GMAnnounceMessage
-#        Enable (true) or Disable (false) the annoucing of the GM at login/logout
-#
 #    Motd
 #        Message of the Day. Displayed at worldlogin for every user ('@' for a newline).
 #
@@ -609,7 +606,6 @@ SkillChance.Prospecting = 0
 SkillChance.Milling = 0
 Event.Announce = 0
 BeepAtStart = 1
-AnnonceMJ = true
 Motd = "Welcome to the Massive Network Game Object Server."
 
 ###################################################################################################################
@@ -1152,44 +1148,3 @@ Ra.IP = 0.0.0.0
 Ra.Port = 3443
 Ra.MinLevel = 3
 Ra.Secure = 1
-
-###################################################################################################################
-# AUCTION HOUSE BOT SETTINGS
-# 
-#    AuctionHouseBot.EnableSeller
-#        Enable/Disable the part of AHBot that puts items up for auction
-#    Default 0 (disabled)
-#
-#    AuctionHouseBot.EnableSeller
-#        Enable/Disable the part of AHBot that buys items from players
-#    Default 0 (disabled)
-#
-#    Auction House Bot character data
-#        AuctionHouseBot.Account is the account number (in realmd->account table) of the player you want to run as the auction bot.
-# 	    AuctionHouseBot.GUID is the GUID (in characters->characters table) of the player you want to run as the auction bot. 
-#    Default: 0 (Auction House Bot disabled)
-#
-#    AuctionHouseBot.VendorItems
-#        Include items that can be bought from vendors.
-#    Default 0
-#
-#    AuctionHouseBot.LootItems
-#        Include items that can be looted or fished for.
-#    Default 1
-#
-#    AuctionHouseBot.OtherItems
-#        Include misc. items.
-#    Default 0
-#
-#    All other settings have been moved to sql
-#
-###################################################################################################################
-
-AuctionHouseBot.EnableSeller = 0
-AuctionHouseBot.EnableBuyer = 0
-AuctionHouseBot.Account = 0
-AuctionHouseBot.GUID = 0
-AuctionHouseBot.VendorItems = 0
-AuctionHouseBot.LootItems = 1
-AuctionHouseBot.OtherItems = 0
-AuctionHouseBot.ItemsPerCycle = 200

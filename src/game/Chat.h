@@ -107,7 +107,6 @@ class ChatHandler
         bool HandleGroupgoCommand(const char* args);
         bool HandleRecallCommand(const char* args);
         bool HandleAnnounceCommand(const char* args);
-		bool HandleSysAnnounceCommand(const char* args);
         bool HandleNotifyCommand(const char* args);
         bool HandleGMmodeCommand(const char* args);
         bool HandleGMChatCommand(const char* args);
@@ -315,9 +314,6 @@ class ChatHandler
         bool HandleMuteCommand(const char* args);
         bool HandleUnmuteCommand(const char* args);
         bool HandleMovegensCommand(const char* args);
-		bool HandleFreezeCommand(const char *args);
-        bool HandleUnFreezeCommand(const char *args);
-        bool HandleListFreezeCommand(const char* args);
 
         bool HandleCharacterDeleteCommand(const char* args);
         bool HandleBanAccountCommand(const char* args);
@@ -420,7 +416,6 @@ class ChatHandler
         bool HandleCastTargetCommand(const char *args);
         bool HandleComeToMeCommand(const char *args);
         bool HandleCombatStopCommand(const char *args);
-        bool HandleAHBotOptionsCommand(const char * args);
         bool HandleSendMessageCommand(const char * args);
         bool HandleRepairitemsCommand(const char* args);
         bool HandleWaterwalkCommand(const char* args);
