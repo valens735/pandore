@@ -42,6 +42,7 @@
 #include "Pet.h"
 #include "SocialMgr.h"
 #include "Tools.h"
+#include "Config/ConfigEnv.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
 {
