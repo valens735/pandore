@@ -723,6 +723,23 @@ enum MangosStrings
 
     // FREE IDS                           1200-9999
 
+	LANG_ANNOUNCE_MOD                 	= 2000,
+	LANG_ANNOUNCE_MJ                 	= 2001,
+	LANG_ANNOUNCE_DBG                 	= 2002,
+	LANG_ANNOUNCE_ADM                 	= 2003,
+	LANG_ANNOUNCE_SYS                 	= 2004,
+	LANG_ANNOUNCE_DEF                 	= 2005,
+	LANG_GMLOGIN_MOD                 	= 2006,
+	LANG_GMLOGIN_MJ                 	= 2007,
+	LANG_GMLOGIN_DBG                 	= 2008,
+	LANG_GMLOGIN_ADM                 	= 2009,
+	LANG_GMLOGIN_SYS                 	= 2010,
+	LANG_GMLOGOUT_MOD                 	= 2011,
+	LANG_GMLOGOUT_MJ                 	= 2012,
+	LANG_GMLOGOUT_DBG                 	= 2013,
+	LANG_GMLOGOUT_ADM                 	= 2014,
+	LANG_GMLOGOUT_SYS                 	= 2015,
+
     // Use for not-in-offcial-sources patches
     //                                    10000-10999
 
