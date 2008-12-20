@@ -144,10 +144,10 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectStuck,                                    // 84 SPELL_EFFECT_STUCK
     &Spell::EffectSummonPlayer,                             // 85 SPELL_EFFECT_SUMMON_PLAYER
     &Spell::EffectActivateObject,                           // 86 SPELL_EFFECT_ACTIVATE_OBJECT
-    &Spell::EffectSummonTotem,                              // 87 SPELL_EFFECT_SUMMON_TOTEM_SLOT1
-    &Spell::EffectSummonTotem,                              // 88 SPELL_EFFECT_SUMMON_TOTEM_SLOT2
-    &Spell::EffectSummonTotem,                              // 89 SPELL_EFFECT_SUMMON_TOTEM_SLOT3
-    &Spell::EffectSummonTotem,                              // 90 SPELL_EFFECT_SUMMON_TOTEM_SLOT4
+    &Spell::EffectUnused,                                   // 87 SPELL_EFFECT_WMO_DAMAGE
+    &Spell::EffectUnused,                                   // 88 SPELL_EFFECT_WMO_REPAIR 
+    &Spell::EffectUnused,                                   // 89 SPELL_EFFECT_WMO_CHANGE
+    &Spell::EffectUnused,                                   // 90 SPELL_EFFECT_KILL_CREDIT
     &Spell::EffectUnused,                                   // 91 SPELL_EFFECT_THREAT_ALL               one spell: zzOLDBrainwash
     &Spell::EffectEnchantHeldItem,                          // 92 SPELL_EFFECT_ENCHANT_HELD_ITEM
     &Spell::EffectUnused,                                   // 93 SPELL_EFFECT_SUMMON_PHANTASM
@@ -5002,8 +5002,60 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             break;
         }
     }
+    if( m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER )
+    {
+        switch(m_spellInfo->Id)
+        {
+            // Chimera Shot
+            case 53209:
+            {
+                uint32 spellId = 0;
+                int32 basePoint = 0;
+                Unit::AuraMap& Auras = unitTarget->GetAuras();
+                for(Unit::AuraMap::iterator i = Auras.begin(); i != Auras.end(); ++i)
+                {
+                    Aura *aura = (*i).second;
+                    if (aura->GetCasterGUID() != m_caster->GetGUID())
+                        continue;
+                    // Search only Serpent Sting, Viper Sting, Scorpid Sting auras
+                    uint64 familyFlag = aura->GetSpellProto()->SpellFamilyFlags;
+                    if (!(familyFlag & 0x000000800000C000LL))
+                        continue;
+                    // Refresh aura duration
+                    aura->SetAuraDuration(aura->GetAuraMaxDuration());
+                    aura->SendAuraUpdate(false);
 
-    if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN )
+                    // Serpent Sting - Instantly deals 40% of the damage done by your Serpent Sting.
+                    if (familyFlag & 0x0000000000004000LL && aura->GetEffIndex() == 0)
+                    {
+                        spellId = 53353; // 53353 Chimera Shot - Serpent
+                        basePoint = aura->GetModifier()->m_amount * 5 * 40 / 100;
+                    }
+                    // Viper Sting - Instantly restores mana to you equal to 60% of the total amount drained by your Viper Sting.
+                    if (familyFlag & 0x0000008000000000LL && aura->GetEffIndex() == 0)
+                    {
+                        spellId = 53358; // 53358 Chimera Shot - Viper
+                        basePoint = aura->GetModifier()->m_amount * 4 * 60 / 100;
+                    }
+                    // Scorpid Sting - Attempts to Disarm the target for 10 sec. This effect cannot occur more than once per 1 minute.
+                    if (familyFlag & 0x0000000000008000LL)
+                        spellId = 53359; // 53359 Chimera Shot - Scorpid
+                    // ?? nothing say in spell desc (possibly need addition check)
+                    //if (familyFlag & 0x0000010000000000LL || // dot
+                    //    familyFlag & 0x0000100000000000LL)   // stun
+                    //{
+                    //    spellId = 53366; // 53366 Chimera Shot - Wyvern
+                    //}
+                }
+                if (spellId)
+                    m_caster->CastCustomSpell(unitTarget, spellId, &basePoint, 0, 0, false);
+                return;
+            }
+            default:
+                break;
+        }
+    }
+    else if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN )
     {
         switch(m_spellInfo->SpellFamilyFlags)
         {
