@@ -309,6 +309,15 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
         }
     }
 
+    // speedup check for heroic class disabled case
+    uint32 heroic_free_slots = sWorld.getConfig(CONFIG_HEROIC_CHARACTERS_PER_REALM);
+    if(heroic_free_slots==0 && GetSecurity()==SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT)
+    {
+        data << (uint8)CHAR_CREATE_UNIQUE_CLASS_LIMIT;
+        SendPacket( &data );
+        return;
+    }
+
     bool AllowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || GetSecurity() > SEC_PLAYER;
     uint32 skipCinematics = sWorld.getConfig(CONFIG_SKIP_CINEMATICS);
 
@@ -324,14 +333,20 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
             Field* field = result2->Fetch();
             uint8 acc_race  = field[0].GetUInt32();
 
-            if(class_ == CLASS_DEATH_KNIGHT)
+            if(GetSecurity()==SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT)
             {
                 uint8 acc_class = field[1].GetUInt32();
                 if(acc_class == CLASS_DEATH_KNIGHT)
                 {
-                    data << (uint8)CHAR_CREATE_UNIQUE_CLASS_LIMIT;
-                    SendPacket( &data );
-                    return;
+                    if(heroic_free_slots > 0)
+                        --heroic_free_slots;
+
+                    if(heroic_free_slots==0)
+                    {
+                        data << (uint8)CHAR_CREATE_UNIQUE_CLASS_LIMIT;
+                        SendPacket( &data );
+                        return;
+                    }
                 }
             }
 
@@ -365,14 +380,20 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
                 if(!have_same_race)
                     have_same_race = race_ == acc_race;
 
-                if(class_ == CLASS_DEATH_KNIGHT)
+                if(GetSecurity()==SEC_PLAYER && class_ == CLASS_DEATH_KNIGHT)
                 {
                     uint8 acc_class = field[1].GetUInt32();
                     if(acc_class == CLASS_DEATH_KNIGHT)
                     {
-                        data << (uint8)CHAR_CREATE_UNIQUE_CLASS_LIMIT;
-                        SendPacket( &data );
-                        return;
+                        if(heroic_free_slots > 0)
+                            --heroic_free_slots;
+
+                        if(heroic_free_slots==0)
+                        {
+                            data << (uint8)CHAR_CREATE_UNIQUE_CLASS_LIMIT;
+                            SendPacket( &data );
+                            return;
+                        }
                     }
                 }
             }
