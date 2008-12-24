@@ -30,7 +30,9 @@ pkgdata_DATA = \
 	realmd.sql \
 	characters.sql \
 	create_mysql.sql \
-	drop_mysql.sql
+	drop_mysql.sql \
+	pandore_custom/characters_auctionhousebot.sql \
+	pandore_custom/mangos_Annonce Fr-GM Stat.sql \
 
 ## Additional files to include when running 'make dist'
 #  SQL files for MaNGOS database
