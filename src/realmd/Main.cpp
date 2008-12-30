@@ -144,8 +144,8 @@ extern int main(int argc, char **argv)
     }
 
     sLog.outString( "%s [realm-daemon]", _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_NR,REVISION_ID) );
-    sLog.outString( "<Ctrl-C> pour stopper.\n" );
-    sLog.outString("Utilisation du fichier de configuration %s.", cfg_file);
+    sLog.outString( "<Ctrl-C> to stop.\n" );
+    sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- Check the version of the configuration file
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
@@ -261,7 +261,7 @@ extern int main(int argc, char **argv)
         if( (++loopCounter) == numLoops )
         {
             loopCounter = 0;
-            sLog.outDetail("Ping MySQL pour garder la connexion active");
+            sLog.outDetail("Ping MySQL to keep connection alive");
             delete dbRealmServer.Query("SELECT 1 FROM realmlist LIMIT 1");
         }
 #ifdef WIN32
@@ -276,7 +276,7 @@ extern int main(int argc, char **argv)
     ///- Remove signal handling before leaving
     UnhookSignals();
 
-    sLog.outString( "Arret en cours..." );
+    sLog.outString( "Halting process..." );
     return 0;
 }
 

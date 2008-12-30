@@ -132,7 +132,7 @@ public:
     if ((++loopCounter) == numLoops)
       {
         loopCounter = 0;
-        sLog.outDetail ("Ping MySQL pour garder la connexion active");
+        sLog.outDetail ("Ping MySQL to keep connection alive");
         delete WorldDatabase.Query ("SELECT 1 FROM command LIMIT 1");
         delete loginDatabase.Query ("SELECT 1 FROM realmlist LIMIT 1");
         delete CharacterDatabase.Query ("SELECT 1 FROM bugreport LIMIT 1");
@@ -333,7 +333,7 @@ int Master::Run()
     WorldDatabase.HaltDelayThread();
     loginDatabase.HaltDelayThread();
 
-    sLog.outString( "Arret en cours..." );
+    sLog.outString( "Halting process..." );
 
     #ifdef WIN32
     if (sConfig.GetBoolDefault("Console.Enable", true))
@@ -393,7 +393,7 @@ bool Master::_StartDB()
         sLog.outError("Database not specified in configuration file");
         return false;
     }
-    sLog.outString("World BDD: %s", dbstring.c_str());
+    sLog.outString("World Database: %s", dbstring.c_str());
 
     ///- Initialise the world database
     if(!WorldDatabase.Initialize(dbstring.c_str()))
@@ -445,7 +445,7 @@ bool Master::_StartDB()
 
     sWorld.LoadDBVersion();
 
-    sLog.outString("Utilise %s", sWorld.GetDBVersion());
+    sLog.outString("Using %s", sWorld.GetDBVersion());
     return true;
 }
 

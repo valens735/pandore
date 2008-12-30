@@ -38,7 +38,6 @@
 #include "Util.h"
 #include "ArenaTeam.h"
 #include "Language.h"
-#include "Config/ConfigEnv.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -836,34 +835,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->SetTaxiCheater(true);
 
     if(pCurrChar->isGameMaster())
-		{
-	bool Annonce = sConfig.GetBoolDefault("AnnonceMJ",true);
-	if(Annonce)
-		{
         SendNotification(LANG_GM_ON);
-
-		switch(GetSecurity())
-		{
-		case 1:
-		sWorld.SendWorldText(LANG_GMLOGIN_MOD, pCurrChar->GetName());
-		break;
-		case 2:
-		sWorld.SendWorldText(LANG_GMLOGIN_MJ, pCurrChar->GetName());
-		break;
-		case 3:
-		sWorld.SendWorldText(LANG_GMLOGIN_DBG, pCurrChar->GetName());
-		break;
-		case 4:
-		sWorld.SendWorldText(LANG_GMLOGIN_ADM, pCurrChar->GetName());
-		break;
-		case 5:
-		sWorld.SendWorldText(LANG_GMLOGIN_SYS, pCurrChar->GetName());
-		break;
-		}
-		sLog.outBasic("MJ '%s' connecté et annoncé",pCurrChar->GetName());
-		}
-		else sLog.outBasic("Pas annoncé xD");
-	}
 
     std::string IP_str = GetRemoteAddress();
     sLog.outChar("Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
