@@ -1920,7 +1920,6 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
 
     // bonus from skills is 0.04%
     int32    skillBonus  = 4 * ( attackerWeaponSkill - victimMaxSkillValueForLevel );
-    int32    skillBonus2 = 4 * ( attackerMaxSkillValueForLevel - victimDefenseSkill );
     int32    sum = 0, tmp = 0;
     int32    roll = urand (0, 10000);
 
@@ -2008,7 +2007,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     }
 
     // Critical chance
-    tmp = crit_chance + skillBonus2;
+    tmp = crit_chance;
 
     if (tmp > 0 && roll < (sum += tmp))
     {
@@ -2036,10 +2035,14 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
         }
     }
 
-    if ((GetTypeId()!=TYPEID_PLAYER && !(((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH) && !((Creature*)this)->isPet()))
+    // mobs can score crushing blows if they're 4 or more levels above victim
+    if (getLevelForTarget(pVictim) >= pVictim->getLevelForTarget(this) + 4 &&
+        // can be from by creature (if can) or from controlled player that considered as creature
+        (GetTypeId()!=TYPEID_PLAYER && !((Creature*)this)->isPet() &&
+        !(((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH) ||
+        GetTypeId()==TYPEID_PLAYER && GetCharmerOrOwnerGUID()))
     {
-        // mobs can score crushing blows if they're 3 or more levels above victim
-        // or when their weapon skill is 15 or more above victim's defense skill
+        // when their weapon skill is 15 or more above victim's defense skill
         tmp = victimDefenseSkill;
         int32 tmpmax = victimMaxSkillValueForLevel;
         // having defense above your maximum (from items, talents etc.) has no effect
@@ -2648,6 +2651,9 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit *pVict
         else
             crit -= ((Player*)pVictim)->GetRatingBonusValue(CR_CRIT_TAKEN_MELEE);
     }
+
+    // Apply crit chance from defence skill
+    crit += (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
 
     if (crit < 0.0f)
         crit = 0.0f;
@@ -7246,7 +7252,6 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
             if (pVictim)
             {
                 crit_chance = GetUnitCriticalChance(attackType, pVictim);
-                crit_chance+= (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
                 crit_chance+= GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             break;
