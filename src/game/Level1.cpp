@@ -121,13 +121,42 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 }
 
 // global announce
-bool ChatHandler::HandleAnnounceCommand(const char* args)
+bool ChatHandler::HandleSysAnnounceCommand(const char* args)
 {
     if(!*args)
         return false;
 
     sWorld.SendWorldText(LANG_SYSTEMMESSAGE,args);
     return true;
+}
+
+bool ChatHandler::HandleAnnounceCommand(const char* args)
+{
+    if(!*args)
+		return false;
+		
+	switch(m_session->GetSecurity())
+    {
+		case 1:
+	sWorld.SendWorldText(LANG_ANNOUNCE_MOD, m_session->GetPlayer()->GetName(), args);
+			break;
+		case 2:
+	sWorld.SendWorldText(LANG_ANNOUNCE_MJ, m_session->GetPlayer()->GetName(), args);
+			break;
+		case 3:
+	sWorld.SendWorldText(LANG_ANNOUNCE_DBG, m_session->GetPlayer()->GetName(), args);
+			break;
+		case 4:
+	sWorld.SendWorldText(LANG_ANNOUNCE_ADM, m_session->GetPlayer()->GetName(), args);
+			break;
+		case 5:
+	sWorld.SendWorldText(LANG_ANNOUNCE_SYS, m_session->GetPlayer()->GetName(), args);
+			break;
+		default:
+	sWorld.SendWorldText(LANG_ANNOUNCE_DEF, m_session->GetPlayer()->GetName(), args);
+			break;
+	}
+	return true;
 }
 
 //notification player at the screen
