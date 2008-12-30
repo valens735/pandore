@@ -38,6 +38,7 @@
 #include "Util.h"
 #include "ArenaTeam.h"
 #include "Language.h"
+#include "Config/ConfigEnv.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
