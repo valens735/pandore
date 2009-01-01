@@ -411,7 +411,7 @@ void Spell::FillTargetMap()
             case TARGET_ALL_AROUND_CASTER:
                 if( m_spellInfo->EffectImplicitTargetB[i]==TARGET_ALL_PARTY ||
                     m_spellInfo->EffectImplicitTargetB[i]==TARGET_ALL_FRIENDLY_UNITS_AROUND_CASTER ||
-                    m_spellInfo->EffectImplicitTargetB[i]==TARGET_RANDOM_RAID_MEMBER )
+                    m_spellInfo->EffectImplicitTargetB[i]==TARGET_ALL_RAID_AROUND_CASTER )
                 {
                     SetTargetMap(i,m_spellInfo->EffectImplicitTargetB[i],tmpUnitMap);
                 }
@@ -1505,6 +1505,7 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,std::list<Unit*> &TagUnitMap)
         case TARGET_ALL_PARTY_AROUND_CASTER:
         case TARGET_ALL_PARTY_AROUND_CASTER_2:
         case TARGET_ALL_PARTY:
+        case TARGET_ALL_RAID_AROUND_CASTER:
         {
             Player *pTarget = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself();
             Group *pGroup = pTarget ? pTarget->GetGroup() : NULL;
@@ -1518,7 +1519,9 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,std::list<Unit*> &TagUnitMap)
                     Player* Target = itr->getSource();
 
                     // IsHostileTo check duel and controlled by enemy
-                    if( Target && Target->GetSubGroup()==subgroup && !m_caster->IsHostileTo(Target) )
+                    if( Target &&
+                        (cur==TARGET_ALL_RAID_AROUND_CASTER || Target->GetSubGroup()==subgroup) &&
+                        !m_caster->IsHostileTo(Target) )
                     {
                         if( m_caster->IsWithinDistInMap(Target, radius) )
                             TagUnitMap.push_back(Target);
@@ -1538,12 +1541,6 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,std::list<Unit*> &TagUnitMap)
                     if( m_caster->IsWithinDistInMap(pet, radius) )
                         TagUnitMap.push_back(pet);
             }
-        }break;
-        case TARGET_RANDOM_RAID_MEMBER:
-        {
-            if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                if(Player* target = ((Player*)m_caster)->GetNextRandomRaidMember(radius))
-                    TagUnitMap.push_back(target);
         }break;
         case TARGET_SINGLE_FRIEND:
         case TARGET_SINGLE_FRIEND_2:
@@ -2716,8 +2713,8 @@ void Spell::SendCastResult(uint8 result)
                     case 45373:                             // Bloodberry Elixir
                         data << uint32(4075);
                         break;
-                    default:                                // default case
-                        data << uint32(m_spellInfo->AreaId);
+                    default:                                // default case (don't must be)
+                        data << uint32(0);
                         break;
                 }
                 break;
@@ -3655,8 +3652,8 @@ uint8 Spell::CanCast(bool strict)
                 return SPELL_FAILED_NOT_IN_ARENA;
 
     // zone check
-    if(!IsSpellAllowedInLocation(m_spellInfo,m_caster->GetMapId(),m_caster->GetZoneId(),m_caster->GetAreaId()))
-        return SPELL_FAILED_REQUIRES_AREA;
+    if(uint8 res= GetSpellAllowedInLocationError(m_spellInfo,m_caster->GetMapId(),m_caster->GetZoneId(),m_caster->GetAreaId()))
+        return res;
 
     // not let players cast spells at mount (and let do it to creatures)
     if( m_caster->IsMounted() && m_caster->GetTypeId()==TYPEID_PLAYER && !m_IsTriggeredSpell &&
@@ -4282,7 +4279,7 @@ uint8 Spell::CanCast(bool strict)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 // Ignore map check if spell have AreaId. AreaId already checked and this prevent special mount spells
-                if (m_caster->GetTypeId()==TYPEID_PLAYER && !sMapStore.LookupEntry(m_caster->GetMapId())->IsMountAllowed() && !m_IsTriggeredSpell && !m_spellInfo->AreaId)
+                if (m_caster->GetTypeId()==TYPEID_PLAYER && !sMapStore.LookupEntry(m_caster->GetMapId())->IsMountAllowed() && !m_IsTriggeredSpell && !m_spellInfo->AreaGroupId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 ShapeshiftForm form = m_caster->m_form;
