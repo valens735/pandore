@@ -1368,7 +1368,7 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
 
     *p_data << uint8(getLevel());                           // player level
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
-    uint32 zoneId = MapManager::Instance().GetZoneId(GetMapId(), GetPositionX(),GetPositionY());
+    uint32 zoneId = MapManager::Instance().GetZoneId(GetMapId(), GetPositionX(),GetPositionY(),GetPositionZ());
     sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
     *p_data << uint32(zoneId);
     *p_data << uint32(GetMapId());
@@ -5328,7 +5328,7 @@ void Player::CheckExploreSystem()
     if (isInFlight())
         return;
 
-    uint16 areaFlag=MapManager::Instance().GetBaseMap(GetMapId())->GetAreaFlag(GetPositionX(),GetPositionY());
+    uint16 areaFlag=MapManager::Instance().GetBaseMap(GetMapId())->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ());
     if(areaFlag==0xffff)
         return;
     int offset = areaFlag / 32;
@@ -6170,16 +6170,17 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
     if (!zone)
     {
         // stored zone is zero, use generic and slow zone detection
-        result = CharacterDatabase.PQuery("SELECT map,position_x,position_y FROM characters WHERE guid='%u'", guidLow);
+        result = CharacterDatabase.PQuery("SELECT map,position_x,position_y,position_z FROM characters WHERE guid='%u'", guidLow);
         if( !result )
             return 0;
         fields = result->Fetch();
         uint32 map = fields[0].GetUInt32();
         float posx = fields[1].GetFloat();
         float posy = fields[2].GetFloat();
+        float posz = fields[3].GetFloat();
         delete result;
 
-        zone = MapManager::Instance().GetZoneId(map,posx,posy);
+        zone = MapManager::Instance().GetZoneId(map,posx,posy,posz);
 
         CharacterDatabase.PExecute("UPDATE characters SET zone='%u' WHERE guid='%u'", zone, guidLow);
     }
@@ -13890,7 +13891,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     uint32 transGUID = fields[24].GetUInt32();
     Relocate(fields[6].GetFloat(),fields[7].GetFloat(),fields[8].GetFloat(),fields[10].GetFloat());
-    SetFallInformation(0, fields[8].GetFloat());
     SetMapId(fields[9].GetUInt32());
     SetDifficulty(fields[32].GetUInt32());                  // may be changed in _LoadGroup
 
@@ -13942,6 +13942,16 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     // since the player may not be bound to the map yet, make sure subsequent
     // getmap calls won't create new maps
     SetInstanceId(map->GetInstanceId());
+
+    // if the player is in an instance and it has been reset in the meantime teleport him to the entrance
+    if(GetInstanceId() && !sInstanceSaveManager.GetInstanceSave(GetInstanceId()))
+    {
+        AreaTrigger const* at = objmgr.GetMapEntranceTrigger(GetMapId());
+        if(at)
+            Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
+        else
+            sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no aretrigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(), GetGUIDLow(), GetMapId());
+    }
 
     SaveRecallPosition();
 
@@ -14213,6 +14223,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
         // flight will started later
     }
+
+    // has to be called after last Relocate() in Player::LoadFromDB
+    SetFallInformation(0, GetPositionZ());
 
     _LoadSpellCooldowns(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS));
 
@@ -18677,16 +18690,28 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
             ++iter;
     }
 
-    // Dragonmaw Illusion
-    if( newArea == 3759 || newArea == 3966 || newArea == 3939 )
+    // some auras applied at subzone enter
+    switch(newArea)
     {
-        if( GetDummyAura(40214) )
-        {
-            if( !HasAura(40216,0) )
-                CastSpell(this,40216,true);
-            if( !HasAura(42016,0) )
-                CastSpell(this,42016,true);
-        }
+        // Dragonmaw Illusion
+        case 3759:                                          // Netherwing Ledge
+        case 3939:                                          // Dragonmaw Fortress
+        case 3966:                                          // Dragonmaw Base Camp
+            if( GetDummyAura(40214) )
+            {
+                if( !HasAura(40216,0) )
+                    CastSpell(this,40216,true);
+                if( !HasAura(42016,0) )
+                    CastSpell(this,42016,true);
+            }
+            break;
+        // Dominion Over Acherus
+        case 4281:                                          // Acherus: The Ebon Hold
+        case 4342:                                          // Acherus: The Ebon Hold
+            if( HasSpell(51721) )
+                if( !HasAura(51721,0) )
+                    CastSpell(this,51721,true);
+            break;
     }
 }
 
