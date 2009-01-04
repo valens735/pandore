@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2564,8 +2564,8 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
 
     if (num_to_add < 1)
         num_to_add = 1;
-    if (num_to_add > pProto->Stackable)
-        num_to_add = pProto->Stackable;
+    if (num_to_add > pProto->GetMaxStackSize())
+        num_to_add = pProto->GetMaxStackSize();
 
     // init items_count to 1, since 1 item will be created regardless of specialization
     int items_count=1;

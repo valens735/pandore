@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -580,7 +580,7 @@ bool generate_sql_makefile()
     if(!fout) { pclose(cmd_pipe); return false; }
 
     fprintf(fout,
-        "# Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>\n"
+        "# Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>\n"
         "#\n"
         "# This program is free software; you can redistribute it and/or modify\n"
         "# it under the terms of the GNU General Public License as published by\n"
@@ -613,7 +613,7 @@ bool generate_sql_makefile()
     for(std::set<std::string>::iterator itr = file_list.begin(), next; itr != file_list.end(); ++itr)
     {
         next = itr; ++next;
-        fprintf(fout, "\t%s %s\n", itr->c_str(), next == file_list.end() ? "" : "\\");
+        fprintf(fout, "\t%s%s\n", itr->c_str(), next == file_list.end() ? "" : " \\");
     }
 
     fprintf(fout,
@@ -625,7 +625,7 @@ bool generate_sql_makefile()
     for(std::set<std::string>::iterator itr = file_list.begin(), next; itr != file_list.end(); ++itr)
     {
         next = itr; ++next;
-        fprintf(fout, "\t%s %s\n", itr->c_str(), next == file_list.end() ? "" : "\\");
+        fprintf(fout, "\t%s%s\n", itr->c_str(), next == file_list.end() ? "" : " \\");
     }
 
     fclose(fout);
