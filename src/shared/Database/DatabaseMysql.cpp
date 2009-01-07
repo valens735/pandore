@@ -163,7 +163,23 @@ bool DatabaseMysql::Initialize(const char *infoString)
         // set connection properties to UTF8 to properly handle locales for different
         // server configs - core sends data in UTF8, so MySQL must expect UTF8 too
         PExecute("SET NAMES `utf8`");
-        PExecute("SET CHARACTER SET `utf8`");
+        
+#if MYSQL_VERSION_ID >= 50003
+//  #if MYSQL_VERSIOB_ID >= 50013
+        my_bool my_true = (my_bool)1;
+        if (mysql_options(mMysql, MYSQL_OPT_RECONNECT, &my_true))
+        {
+            sLog.outDetail("Echec MYSQL_OPT_RECONNECT.");
+        }
+        else
+        {
+            sLog.outDetail("Succes turned on MYSQL_OPT_RECONNECT.");
+        }
+#else
+        sLog.outDetail("Your mySQL client lib version does not support reconnecting after a timeout.");
+        sLog.outDetail("If this causes you any trouble we advice you to upgrade");
+        sLog.outDetail("your mySQL client libs to at least mySQL 5.0.13 to resolve this problem.");
+#endif
 
         return true;
     }
