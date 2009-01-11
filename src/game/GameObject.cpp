@@ -124,6 +124,11 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     SetFloatValue(GAMEOBJECT_FACING, ang);                  //this is not facing angle
 
     int64 rotation = 0;
+	
+	if (ang > (float)M_PI)
+		{ang -= 2*(float)M_PI;}
+	else if (ang < -(float)M_PI)
+		{ang += 2*(float)M_PI;}
 
     float f_rot1 = sin(ang / 2.0f);
     int64 i_rot1 = f_rot1 / atan(pow(2.0f, -20.0f));
